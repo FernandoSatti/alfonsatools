@@ -191,7 +191,7 @@
         function copiarPrecio(idPrecio) {
             const precio = document.getElementById(idPrecio).textContent;
             navigator.clipboard.writeText(precio).then(function () {
-                alert("Precio copiado al portapapeles.");
+                
             }, function () {
                 alert("Error al copiar el precio.");
             });
