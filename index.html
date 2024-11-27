@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alfonsa Tools</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">Alfonsa Tools</a>
+        <div class="navbar-links">
+            <a href="generador-listas.html" class="navbar-link">Listas</a>
+            <a href="calculadora-precios.html" class="navbar-link">Precios</a>
+            <a href="calculadora-promedio.html" class="navbar-link">Promedio</a>
+            <a href="precios-aumento-descuento.html" class="navbar-link">Aum/Desc</a>
+        </div>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+
+    <div class="content">
+        <h1 class="fade-in">Bienvenido a Alfonsa Tools</h1>
+        <p class="fade-in">Selecciona una herramienta para comenzar:</p>
+        
+        <div class="tool-grid fade-in">
+            <div class="tool-card">
+                <i class="fas fa-list-ul tool-icon"></i>
+                <h2 class="tool-title">Generador de Listas</h2>
+                <p class="tool-description">Crea y compara listas de productos fácilmente.</p>
+                <a href="generador-listas.html" class="btn">Usar herramienta</a>
+            </div>
+            <div class="tool-card">
+                <i class="fas fa-calculator tool-icon"></i>
+                <h2 class="tool-title">Calculadora de Precios</h2>
+                <p class="tool-description">Calcula precios con diferentes porcentajes.</p>
+                <a href="calculadora-precios.html" class="btn">Usar herramienta</a>
+            </div>
+            <div class="tool-card">
+                <i class="fas fa-balance-scale tool-icon"></i>
+                <h2 class="tool-title">Calculadora de Promedio</h2>
+                <p class="tool-description">Calcula el precio promedio de tus productos.</p>
+                <a href="calculadora-promedio.html" class="btn">Usar herramienta</a>
+            </div>
+            <div class="tool-card">
+                <i class="fas fa-percentage tool-icon"></i>
+                <h2 class="tool-title">Precios con Aumento/Descuento</h2>
+                <p class="tool-description">Aplica aumentos o descuentos a tus precios.</p>
+                <a href="precios-aumento-descuento.html" class="btn">Usar herramienta</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 Alfonsa Tools. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        const hamburger = document.querySelector('.hamburger');
+        const navbarLinks = document.querySelector('.navbar-links');
+
+        hamburger.addEventListener('click', () => {
+            navbarLinks.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        });
+
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.padding = '0.5rem 2rem';
+                navbar.style.boxShadow = '0 2px 15px rgba(0, 0, 0, 0.1)';
+            } else {
+                navbar.style.padding = '1rem 2rem';
+                navbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+            }
+        });
+    </script>
+</body>
+</html>
+

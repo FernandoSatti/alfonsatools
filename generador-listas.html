@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Listas - Alfonsa Tools</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      margin-bottom: 20px;
+    }
+    #formattedList {
+      white-space: pre-wrap;
+      background-color: #f0f0f0;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 1.2em;
+    }
+    button {
+      padding: 0.5rem;
+      font-size: 1em;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: white;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    h2 {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">Alfonsa Tools</a>
+    <div class="navbar-links">
+      <a href="generador-listas.html" class="navbar-link">Listas</a>
+      <a href="calculadora-precios.html" class="navbar-link">Precios</a>
+      <a href="calculadora-promedio.html" class="navbar-link">Promedio</a>
+      <a href="precios-aumento-descuento.html" class="navbar-link">Aum/Desc</a>
+    </div>
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </nav>
+
+  <div class="content">
+    <h1>Generador de Listas</h1>
+
+    <h2>Lista 1 antigua:</h2>
+    <textarea id="inputList1" placeholder="Pega tu lista aquí...(puede ser la nueva sin comparar)"></textarea>
+
+    <h2>Lista 2 nueva (opcional, para comparar):</h2>
+    <textarea id="inputList2" placeholder="Pega la lista nueva aquí si quieres comparar con la anterior (opcional)..."></textarea>
+
+    <!-- Contenedor para los botones -->
+    <div class="button-container">
+      <button onclick="generateList()">Generar Lista</button>
+      <button onclick="compareLists()">Comparar y Generar Lista</button>
+      <button onclick="clearLists()">Borrar Listas</button>
+      <button id="copyButton" onclick="copyToClipboard()">Copiar Lista</button>
+    </div>
+
+    <h2>Lista Formateada:</h2>
+    <div id="formattedList"></div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2024 Alfonsa Tools. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    // El código JavaScript existente se mantiene igual
+    function generateList() {
+      const inputText1 = document.getElementById('inputList1').value;
+      const formattedText = formatProductList(inputText1);
+      document.getElementById('formattedList').textContent = formattedText;
+    }
+
+    function compareLists() {
+      const inputText1 = document.getElementById('inputList1').value;
+      const inputText2 = document.getElementById('inputList2').value;
+
+      // Si la lista 2 está vacía, genera la lista 1 sin comparación
+      if (!inputText2) {
+        generateList();
+      } else {
+        const formattedText = compareProductLists(inputText1, inputText2);
+        document.getElementById('formattedList').textContent = formattedText;
+      }
+    }
+
+    function clearLists() {
+      document.getElementById('inputList1').value = '';
+      document.getElementById('inputList2').value = '';
+      document.getElementById('formattedList').textContent = '';
+    }
+
+    function formatProductList(text) {
+      const categories = {
+        "APERITIVOS Y CACHACAS": "🍹",
+        "CERVEZAS": "🍻",
+        "CHAMPAGNE & ESPUMANTES": "🍾",
+        "ENERGIZANTES": "⚡",
+        "GASEOSAS, JUGOS Y AGUAS": "🥤",
+        "GIN Y GINEBRAS": "🍸",
+        "GRAPAS": "🍇",
+        "LICORES": "🥃",
+        "MINIATURAS Y PETACAS": "✨",
+        "RON": "🍸",
+        "SIDRAS": "🍏",
+        "TEQUILAS Y PISCOS": "🥃",
+        "VODKA": "🍸",
+        "WHISKY": "🥃",
+        "COMIDAS": "🍴",
+        "CRISTALERIA Y MAS": "🫗",
+        "ESTUCHERIA Y GIFTPACK": "📦",
+        "PULPAS": "🐙",
+        "VINOS": "🍷"
+      };
+
+      let lines = text.split('\n');
+      let formattedList = '';
+      let currentCategory = '';
+
+      lines.forEach(line => {
+        let trimmedLine = line.replace(/\s+/g, ' ').trim();  // Eliminamos espacios innecesarios dentro de cada línea
+
+        // Verifica si la línea es una categoría y que no se repita
+        for (const category in categories) {
+          if (trimmedLine.toUpperCase().startsWith(category) && currentCategory !== category) {
+            formattedList += `\n${categories[category]} ${category.toUpperCase()}\n\n`;  // Añadir salto de línea antes de la categoría
+            currentCategory = category;
+            return;
+          }
+        }
+
+        // Añade la línea como producto y respeta el formato
+        if (trimmedLine !== '') {
+          formattedList += `${trimmedLine}\n`;  // Respetar el formato original de cada producto sin alterar los espacios
+        }
+      });
+
+      return formattedList.trim();
+    }
+
+    function compareProductLists(list1, list2) {
+      const categories = {
+        "APERITIVOS Y CACHACAS": "🍹",
+        "CERVEZAS": "🍻",
+        "CHAMPAGNE & ESPUMANTES": "🍾",
+        "ENERGIZANTES": "⚡",
+        "GASEOSAS, JUGOS Y AGUAS": "🥤",
+        "GIN Y GINEBRAS": "🍸",
+        "GRAPAS": "🍇",
+        "LICORES": "🥃",
+        "MINIATURAS Y PETACAS": "✨",
+        "RON": "🍸",
+        "SIDRAS": "🍏",
+        "TEQUILAS Y PISCOS": "🥃",
+        "VODKA": "🍸",
+        "WHISKY": "🥃",
+        "COMIDAS": "🍴",
+        "CRISTALERIA Y MAS": "🫗",
+        "ESTUCHERIA Y GIFTPACK": "📦",
+        "PULPAS": "🐙",
+        "VINOS": "🍷"
+      };
+
+      let list1Lines = list1.split('\n').map(line => line.replace(/\s+/g, ' ').trim());
+      let list2Lines = list2.split('\n').map(line => line.replace(/\s+/g, ' ').trim());
+
+      let formattedList = '';
+      let currentCategory = '';
+
+      list2Lines.forEach(line => {
+        let trimmedLine = line.replace(/\s+/g, ' ').trim();
+        let isNew = true;
+
+        // Verifica si la línea es una categoría y que no se repita
+        for (const category in categories) {
+          if (trimmedLine.toUpperCase().startsWith(category) && currentCategory !== category) {
+            formattedList += `\n${categories[category]} ${category.toUpperCase()}\n\n`;  // Añadir salto de línea antes de la categoría
+            currentCategory = category;
+            return;
+          }
+        }
+
+        // Compara el nombre del producto entre la lista 1 y la lista 2
+        list1Lines.forEach(item => {
+          let productFromList1 = item.split(/\d/)[0].trim();  // Extrae el nombre del producto (sin el precio) de la lista 1
+          let productFromList2 = trimmedLine.split(/\d/)[0].trim();  // Extrae el nombre del producto (sin el precio) de la lista 2
+
+          if (productFromList1 === productFromList2) {
+            isNew = false;  // Producto ya existe, solo cambiar el precio si es diferente
+          }
+        });
+
+        // Si el producto es nuevo, lo marcamos como "NEW", de lo contrario solo mostramos la línea de la lista 2
+        if (isNew) {
+          formattedList += `${trimmedLine} 🆕\n`;
+        } else {
+          formattedList += `${trimmedLine}\n`;  // Producto existente o con precio modificado
+        }
+      });
+
+      return formattedList.trim();
+    }
+
+    // Función para copiar el contenido al portapapeles
+    function copyToClipboard() {
+    const formattedText = document.getElementById('formattedList').textContent;
+    const copyButton = document.getElementById('copyButton'); // Obtener el botón
+
+    navigator.clipboard.writeText(formattedText)
+        .then(() => {
+            // Cambiar el texto del botón a "Copiado"
+            const originalText = copyButton.innerHTML;
+            copyButton.innerHTML = '<i class="fas fa-check"></i> Copiado';
+
+            // Restaurar el texto original después de 1 segundo
+            setTimeout(() => {
+                copyButton.innerHTML = originalText;
+            }, 1000);
+        })
+        .catch(err => {
+            console.error('Error al copiar: ', err);
+        });
+}
+    const hamburger = document.querySelector('.hamburger');
+    const navbarLinks = document.querySelector('.navbar-links');
+
+    hamburger.addEventListener('click', () => {
+      navbarLinks.classList.toggle('active');
+      hamburger.classList.toggle('active');
+    });
+  </script>
+</body>
+</html>
+
