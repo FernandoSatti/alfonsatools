@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Facturas - Alfonsa Tools</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+  <style>
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .input-section, .price-section, .output-section {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+      font-weight: bold;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    .total-row {
+      font-weight: bold;
+      background-color: #e9ecef;
+    }
+    .not-found {
+      color: #dc3545;
+      font-style: italic;
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: 1px solid #ddd;
+      background-color: #f8f9fa;
+      border-radius: 4px 4px 0 0;
+      margin-right: 5px;
+    }
+    .tab.active {
+      background-color: #fff;
+      border-bottom: 1px solid #fff;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">Alfonsa Tools</a>
+    <div class="navbar-links">
+      <a href="generador-listas.html" class="navbar-link">Listas</a>
+      <a href="calculadora-precios.html" class="navbar-link">Precios</a>
+      <a href="calculadora-promedio.html" class="navbar-link">Promedio</a>
+      <a href="precios-aumento-descuento.html" class="navbar-link">Aum/Desc</a>
+      <a href="generador-facturas.html" class="navbar-link">Facturas</a>
+    </div>
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </nav>
+
+  <div class="content">
+    <div class="container">
+      <h1>Generador de Facturas</h1>
+      
+      <div class="tabs">
+        <div class="tab active" onclick="showTab('input-tab')">Generar Factura</div>
+        <div class="tab" onclick="showTab('price-tab')">Lista de Precios</div>
+      </div>
+      
+      <div id="input-tab" class="tab-content active">
+        <div class="input-section">
+          <h2>Ingresa los productos</h2>
+          <p>Formato: [cantidad]x[unidades] [nombre del producto]</p>
+          <p>Ejemplo: 15x6 Smirnoff ruby orange 750cc</p>
+          <textarea id="productInput" placeholder="Pega tu lista de productos aquí..."></textarea>
+          <div class="button-container">
+            <button class="btn" onclick="generateInvoice()">
+              <i class="fas fa-file-invoice"></i> Generar Factura
+            </button>
+            <button class="btn" onclick="clearInput()">
+              <i class="fas fa-trash"></i> Limpiar
+            </button>
+          </div>
+        </div>
+        
+        <div class="output-section">
+          <h2>Factura Generada</h2>
+          <div id="invoiceOutput">
+            <p>La factura aparecerá aquí...</p>
+          </div>
+          <div class="button-container">
+            <button class="btn" id="copyButton" onclick="copyInvoice()">
+              <i class="fas fa-copy"></i> Copiar Factura
+            </button>
+            <button class="btn" onclick="exportToExcel()">
+              <i class="fas fa-file-excel"></i> Exportar a Excel
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="price-tab" class="tab-content">
+        <div class="price-section">
+          <h2>Lista de Precios</h2>
+          <p>Agrega o actualiza los precios de los productos</p>
+          <textarea id="priceInput" placeholder="Pega tu lista de precios aquí...
+Formato: Nombre del producto Precio
+Ejemplo: Smirnoff 5850"></textarea>
+          <div class="button-container">
+            <button class="btn" onclick="updatePriceList()">
+              <i class="fas fa-save"></i> Guardar Lista de Precios
+            </button>
+            <button class="btn" onclick="clearPriceList()">
+              <i class="fas fa-trash"></i> Limpiar
+            </button>
+          </div>
+          <div id="priceListOutput">
+            <p>La lista de precios aparecerá aquí...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2024 Alfonsa Tools. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    // Almacenamiento de la lista de precios
+    let priceList = {};
+    
+    // Cargar lista de precios guardada al iniciar
+    window.onload = function() {
+      const savedPriceList = localStorage.getItem('priceList');
+      if (savedPriceList) {
+        priceList = JSON.parse(savedPriceList);
+        displayPriceList();
+      }
+      
+      // Cargar lista de precios de ejemplo si no hay ninguna guardada
+      if (Object.keys(priceList).length === 0) {
+        const samplePrices = `Partridge 3559
+Perdices 4900
+Ala colorada 9800
+Exploración 11300
+Ballantines 22900
+Portillo 3400
+Ramazotti 4700
+Chivas 12 41100
+Baileys 15900
+Rincón famoso 4800
+Vasco viejo 2200
+Beefeter pink 18300
+Old par 32800
+Intocables 5750
+Tilia Catena 8000
+Smirnoff sabor 5850
+Dada 3500
+Santa Julia malb 3150
+Cinzano 4950
+Gordons 7800
+San Telmo 2450
+Los árboles 3000
+Navarro correa 4300`;
+        document.getElementById('priceInput').value = samplePrices;
+        updatePriceList();
+      }
+    };
+    
+    // Cambiar entre pestañas
+    function showTab(tabId) {
+      // Ocultar todas las pestañas
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Mostrar la pestaña seleccionada
+      document.getElementById(tabId).classList.add('active');
+      document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+    }
+    
+    // Actualizar la lista de precios
+    function updatePriceList() {
+      const priceInput = document.getElementById('priceInput').value;
+      const lines = priceInput.split('\n');
+      
+      // Limpiar la lista de precios actual
+      priceList = {};
+      
+      // Procesar cada línea
+      lines.forEach(line => {
+        if (line.trim() === '') return;
+        
+        // Extraer el precio (último número en la línea)
+        const match = line.match(/(\d+)$/);
+        if (match) {
+          const price = parseInt(match[0]);
+          // El nombre del producto es todo lo que está antes del precio
+          const productName = line.substring(0, line.lastIndexOf(match[0])).trim().toLowerCase();
+          priceList[productName] = price;
+        }
+      });
+      
+      // Guardar en localStorage
+      localStorage.setItem('priceList', JSON.stringify(priceList));
+      
+      // Mostrar la lista de precios
+      displayPriceList();
+    }
+    
+    // Mostrar la lista de precios
+    function displayPriceList() {
+      let html = '<table><tr><th>Producto</th><th>Precio (ARS)</th></tr>';
+      
+      for (const [product, price] of Object.entries(priceList)) {
+        html += `<tr><td>${product}</td><td>${price}</td></tr>`;
+      }
+      
+      html += '</table>';
+      document.getElementById('priceListOutput').innerHTML = html;
+    }
+    
+    // Limpiar la lista de precios
+    function clearPriceList() {
+      document.getElementById('priceInput').value = '';
+      document.getElementById('priceListOutput').innerHTML = '<p>La lista de precios aparecerá aquí...</p>';
+      priceList = {};
+      localStorage.removeItem('priceList');
+    }
+    
+    // Generar la factura
+    function generateInvoice() {
+      const productInput = document.getElementById('productInput').value;
+      const lines = productInput.split('\n');
+      
+      let invoiceItems = [];
+      let total = 0;
+      
+      // Procesar cada línea
+      lines.forEach(line => {
+        line = line.trim();
+        if (line === '') return;
+        
+        // Extraer cantidad y unidades (formato: 15x6)
+        const quantityMatch = line.match(/^(\d+)x(\d+)/);
+        if (!quantityMatch) return;
+        
+        const packages = parseInt(quantityMatch[1]);
+        const unitsPerPackage = parseInt(quantityMatch[2]);
+        const totalUnits = packages * unitsPerPackage;
+        
+        // Extraer el nombre del producto (todo después de la cantidad)
+        const productName = line.substring(line.indexOf(' ') + 1).trim();
+        
+        // Buscar el precio en la lista de precios
+        let price = 0;
+        let found = false;
+        let bestMatch = '';
+        let bestMatchLength = 0;
+        
+        // Buscar la mejor coincidencia en la lista de precios
+        for (const [listedProduct, listedPrice] of Object.entries(priceList)) {
+          const productNameLower = productName.toLowerCase();
+          const listedProductLower = listedProduct.toLowerCase();
+          
+          // Verificar si el producto listado está contenido en el nombre del producto
+          if (productNameLower.includes(listedProductLower)) {
+            // Si encontramos una coincidencia más larga (más específica), la usamos
+            if (listedProductLower.length > bestMatchLength) {
+              bestMatch = listedProduct;
+              bestMatchLength = listedProductLower.length;
+              price = listedPrice;
+              found = true;
+            }
+          }
+        }
+        
+        const subtotal = totalUnits * price;
+        total += subtotal;
+        
+        invoiceItems.push({
+          description: productName,
+          quantity: totalUnits,
+          price: price,
+          subtotal: subtotal,
+          found: found
+        });
+      });
+      
+      // Generar la tabla de factura
+      let html = '<table>';
+      html += '<tr><th>Descripción</th><th>Cantidad</th><th>Precio Unitario (ARS)</th><th>Subtotal (ARS)</th></tr>';
+      
+      invoiceItems.forEach(item => {
+        html += `<tr${!item.found ? ' class="not-found"' : ''}>`;
+        html += `<td>${item.description}${!item.found ? ' (Precio no encontrado)' : ''}</td>`;
+        html += `<td>${item.quantity}</td>`;
+        html += `<td>${item.price}</td>`;
+        html += `<td>${item.subtotal}</td>`;
+        html += '</tr>';
+      });
+      
+      html += `<tr class="total-row"><td colspan="3" style="text-align: right;">Total</td><td>${total}</td></tr>`;
+      html += '</table>';
+      
+      document.getElementById('invoiceOutput').innerHTML = html;
+    }
+    
+    // Limpiar el input de productos
+    function clearInput() {
+      document.getElementById('productInput').value = '';
+      document.getElementById('invoiceOutput').innerHTML = '<p>La factura aparecerá aquí...</p>';
+    }
+    
+    // Copiar la factura al portapapeles
+    function copyInvoice() {
+      const table = document.querySelector('#invoiceOutput table');
+      if (!table) {
+        alert('No hay factura para copiar');
+        return;
+      }
+      
+      let text = '';
+      
+      // Encabezados
+      const headers = table.querySelectorAll('th');
+      let headerRow = [];
+      headers.forEach(header => {
+        headerRow.push(header.textContent);
+      });
+      text += headerRow.join('\t') + '\n';
+      
+      // Filas de datos
+      const rows = table.querySelectorAll('tr:not(:first-child)');
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        let rowData = [];
+        cells.forEach(cell => {
+          rowData.push(cell.textContent);
+        });
+        text += rowData.join('\t') + '\n';
+      });
+      
+      // Copiar al portapapeles
+      navigator.clipboard.writeText(text).then(() => {
+        const copyButton = document.getElementById('copyButton');
+        const originalText = copyButton.innerHTML;
+        copyButton.innerHTML = '<i class="fas fa-check"></i> Copiado';
+        
+        setTimeout(() => {
+          copyButton.innerHTML = originalText;
+        }, 1000);
+      }).catch(err => {
+        console.error('Error al copiar: ', err);
+        alert('Error al copiar la factura');
+      });
+    }
+    
+    // Exportar a Excel
+    function exportToExcel() {
+      const table = document.querySelector('#invoiceOutput table');
+      if (!table) {
+        alert('No hay factura para exportar');
+        return;
+      }
+      
+      let csv = [];
+      
+      // Encabezados
+      const headers = table.querySelectorAll('th');
+      let headerRow = [];
+      headers.forEach(header => {
+        headerRow.push('"' + header.textContent.replace(/"/g, '""') + '"');
+      });
+      csv.push(headerRow.join(','));
+      
+      // Filas de datos
+      const rows = table.querySelectorAll('tr:not(:first-child)');
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        let rowData = [];
+        cells.forEach(cell => {
+          rowData.push('"' + cell.textContent.replace(/"/g, '""') + '"');
+        });
+        csv.push(rowData.join(','));
+      });
+      
+      // Crear archivo CSV
+      const csvContent = csv.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      
+      // Crear enlace de descarga
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'factura.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    
+    // Código para el menú hamburguesa
+    const hamburger = document.querySelector('.hamburger');
+    const navbarLinks = document.querySelector('.navbar-links');
+
+    hamburger.addEventListener('click', () => {
+      navbarLinks.classList.toggle('active');
+      hamburger.classList.toggle('active');
+    });
+  </script>
+</body>
+</html>
