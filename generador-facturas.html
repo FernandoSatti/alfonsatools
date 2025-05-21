@@ -83,6 +83,34 @@
     .tab-content.active {
       display: block;
     }
+    .match-info {
+      font-size: 0.8em;
+      color: #6c757d;
+      margin-top: 3px;
+    }
+    .price-format-info {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      border-left: 3px solid var(--primary);
+    }
+    .currency-symbol {
+      font-size: 0.9em;
+    }
+    .debug-info {
+      font-size: 0.8em;
+      color: #6c757d;
+      margin-top: 5px;
+      display: none;
+    }
+    .show-debug {
+      margin-top: 10px;
+      font-size: 0.8em;
+      color: #6c757d;
+      cursor: pointer;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -115,8 +143,12 @@
         <div class="input-section">
           <h2>Ingresa los productos</h2>
           <p>Formato: [cantidad]x[unidades] [nombre del producto]</p>
-          <p>Ejemplo: 15x6 Smirnoff ruby orange 750cc</p>
-          <textarea id="productInput" placeholder="Pega tu lista de productos aquí..."></textarea>
+          <p>Ejemplo: 3x6 CAMPARI 1L</p>
+          <textarea id="productInput" placeholder="Pega tu lista de productos aquí...
+Ejemplo:
+3x6 CAMPARI 1L
+2x12 CAMPARI 450CC CHICO
+2x12 CAMPARI 750c"></textarea>
           <div class="button-container">
             <button class="btn" onclick="generateInvoice()">
               <i class="fas fa-file-invoice"></i> Generar Factura
@@ -146,10 +178,16 @@
       <div id="price-tab" class="tab-content">
         <div class="price-section">
           <h2>Lista de Precios</h2>
-          <p>Agrega o actualiza los precios de los productos</p>
+          <div class="price-format-info">
+            <p><strong>Formato:</strong> Nombre del producto Precio</p>
+            <p><strong>Ejemplo:</strong> CAMPARI 1L 10318.73</p>
+            <p>Puedes incluir o no el símbolo $ antes del precio.</p>
+          </div>
           <textarea id="priceInput" placeholder="Pega tu lista de precios aquí...
-Formato: Nombre del producto Precio
-Ejemplo: Smirnoff 5850"></textarea>
+Ejemplo:
+CAMPARI 1L 10318.73
+CAMPARI 450CC CHICO 4731.36
+CAMPARI 750c 7891.47"></textarea>
           <div class="button-container">
             <button class="btn" onclick="updatePriceList()">
               <i class="fas fa-save"></i> Guardar Lista de Precios
@@ -161,6 +199,7 @@ Ejemplo: Smirnoff 5850"></textarea>
           <div id="priceListOutput">
             <p>La lista de precios aparecerá aquí...</p>
           </div>
+          <p class="show-debug" onclick="toggleDebugInfo()">Mostrar información de depuración</p>
         </div>
       </div>
     </div>
@@ -173,6 +212,7 @@ Ejemplo: Smirnoff 5850"></textarea>
   <script>
     // Almacenamiento de la lista de precios
     let priceList = {};
+    let debugMode = false;
     
     // Cargar lista de precios guardada al iniciar
     window.onload = function() {
@@ -184,29 +224,9 @@ Ejemplo: Smirnoff 5850"></textarea>
       
       // Cargar lista de precios de ejemplo si no hay ninguna guardada
       if (Object.keys(priceList).length === 0) {
-        const samplePrices = `Partridge 3559
-Perdices 4900
-Ala colorada 9800
-Exploración 11300
-Ballantines 22900
-Portillo 3400
-Ramazotti 4700
-Chivas 12 41100
-Baileys 15900
-Rincón famoso 4800
-Vasco viejo 2200
-Beefeter pink 18300
-Old par 32800
-Intocables 5750
-Tilia Catena 8000
-Smirnoff sabor 5850
-Dada 3500
-Santa Julia malb 3150
-Cinzano 4950
-Gordons 7800
-San Telmo 2450
-Los árboles 3000
-Navarro correa 4300`;
+        const samplePrices = `CAMPARI 1L 10318.73
+CAMPARI 450CC CHICO 4731.36
+CAMPARI 750c 7891.47`;
         document.getElementById('priceInput').value = samplePrices;
         updatePriceList();
       }
@@ -227,6 +247,16 @@ Navarro correa 4300`;
       document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
     }
     
+    // Normalizar texto para comparaciones
+    function normalizeText(text) {
+      return text.toLowerCase()
+        .replace(/\s+/g, ' ')
+        .replace(/cc/gi, '')
+        .replace(/ml/gi, '')
+        .replace(/l$/gi, '')
+        .trim();
+    }
+    
     // Actualizar la lista de precios
     function updatePriceList() {
       const priceInput = document.getElementById('priceInput').value;
@@ -237,15 +267,21 @@ Navarro correa 4300`;
       
       // Procesar cada línea
       lines.forEach(line => {
-        if (line.trim() === '') return;
+        line = line.trim();
+        if (line === '') return;
         
-        // Extraer el precio (último número en la línea)
-        const match = line.match(/(\d+)$/);
-        if (match) {
-          const price = parseInt(match[0]);
+        // Extraer el precio (último número en la línea, posiblemente con $ delante)
+        const priceMatch = line.match(/[\$]?(\d+(\.\d+)?)$/);
+        if (priceMatch) {
+          const price = parseFloat(priceMatch[1]);
           // El nombre del producto es todo lo que está antes del precio
-          const productName = line.substring(0, line.lastIndexOf(match[0])).trim().toLowerCase();
-          priceList[productName] = price;
+          const productName = line.substring(0, line.lastIndexOf(priceMatch[0])).trim();
+          const normalizedName = normalizeText(productName);
+          
+          priceList[productName] = {
+            price: price,
+            normalized: normalizedName
+          };
         }
       });
       
@@ -258,10 +294,20 @@ Navarro correa 4300`;
     
     // Mostrar la lista de precios
     function displayPriceList() {
-      let html = '<table><tr><th>Producto</th><th>Precio (ARS)</th></tr>';
+      let html = '<table><tr><th>Producto</th><th>Precio</th>';
+      if (debugMode) {
+        html += '<th>Nombre Normalizado</th>';
+      }
+      html += '</tr>';
       
-      for (const [product, price] of Object.entries(priceList)) {
-        html += `<tr><td>${product}</td><td>${price}</td></tr>`;
+      for (const [product, data] of Object.entries(priceList)) {
+        html += `<tr>
+          <td>${product}</td>
+          <td><span class="currency-symbol">$</span>${data.price.toFixed(2)}</td>`;
+        if (debugMode) {
+          html += `<td><span class="debug-info">${data.normalized}</span></td>`;
+        }
+        html += '</tr>';
       }
       
       html += '</table>';
@@ -274,6 +320,64 @@ Navarro correa 4300`;
       document.getElementById('priceListOutput').innerHTML = '<p>La lista de precios aparecerá aquí...</p>';
       priceList = {};
       localStorage.removeItem('priceList');
+    }
+    
+    // Encontrar el mejor precio para un producto
+    function findBestPriceMatch(productName) {
+      const normalizedProductName = normalizeText(productName);
+      let bestMatch = null;
+      let bestScore = 0;
+      let bestPrice = 0;
+      
+      for (const [listedProduct, data] of Object.entries(priceList)) {
+        const normalizedListedProduct = data.normalized;
+        
+        // Calcular puntuación de coincidencia
+        let score = 0;
+        
+        // Coincidencia exacta después de normalización
+        if (normalizedProductName === normalizedListedProduct) {
+          score = 100;
+        } 
+        // Coincidencia parcial - el producto listado está contenido en el nombre del producto
+        else if (normalizedProductName.includes(normalizedListedProduct)) {
+          score = 80 + (normalizedListedProduct.length / normalizedProductName.length) * 20;
+        }
+        // Coincidencia parcial - el nombre del producto está contenido en el producto listado
+        else if (normalizedListedProduct.includes(normalizedProductName)) {
+          score = 60 + (normalizedProductName.length / normalizedListedProduct.length) * 20;
+        }
+        // Coincidencia de palabras individuales
+        else {
+          const productWords = normalizedProductName.split(' ');
+          const listedWords = normalizedListedProduct.split(' ');
+          
+          let matchedWords = 0;
+          for (const word of productWords) {
+            if (word.length > 2 && listedWords.includes(word)) {
+              matchedWords++;
+            }
+          }
+          
+          if (matchedWords > 0) {
+            score = (matchedWords / productWords.length) * 50;
+          }
+        }
+        
+        // Actualizar la mejor coincidencia si encontramos una puntuación más alta
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = listedProduct;
+          bestPrice = data.price;
+        }
+      }
+      
+      return {
+        found: bestScore > 30, // Umbral mínimo de coincidencia
+        productName: bestMatch,
+        price: bestPrice,
+        score: bestScore
+      };
     }
     
     // Generar la factura
@@ -289,7 +393,7 @@ Navarro correa 4300`;
         line = line.trim();
         if (line === '') return;
         
-        // Extraer cantidad y unidades (formato: 15x6)
+        // Extraer cantidad y unidades (formato: 3x6)
         const quantityMatch = line.match(/^(\d+)x(\d+)/);
         if (!quantityMatch) return;
         
@@ -300,55 +404,45 @@ Navarro correa 4300`;
         // Extraer el nombre del producto (todo después de la cantidad)
         const productName = line.substring(line.indexOf(' ') + 1).trim();
         
-        // Buscar el precio en la lista de precios
-        let price = 0;
-        let found = false;
-        let bestMatch = '';
-        let bestMatchLength = 0;
+        // Buscar el precio en la lista de precios usando coincidencia inteligente
+        const priceMatch = findBestPriceMatch(productName);
         
-        // Buscar la mejor coincidencia en la lista de precios
-        for (const [listedProduct, listedPrice] of Object.entries(priceList)) {
-          const productNameLower = productName.toLowerCase();
-          const listedProductLower = listedProduct.toLowerCase();
-          
-          // Verificar si el producto listado está contenido en el nombre del producto
-          if (productNameLower.includes(listedProductLower)) {
-            // Si encontramos una coincidencia más larga (más específica), la usamos
-            if (listedProductLower.length > bestMatchLength) {
-              bestMatch = listedProduct;
-              bestMatchLength = listedProductLower.length;
-              price = listedPrice;
-              found = true;
-            }
-          }
-        }
-        
-        const subtotal = totalUnits * price;
+        const subtotal = totalUnits * priceMatch.price;
         total += subtotal;
         
         invoiceItems.push({
           description: productName,
           quantity: totalUnits,
-          price: price,
+          price: priceMatch.price,
           subtotal: subtotal,
-          found: found
+          found: priceMatch.found,
+          matchedProduct: priceMatch.productName,
+          matchScore: priceMatch.score
         });
       });
       
       // Generar la tabla de factura
       let html = '<table>';
-      html += '<tr><th>Descripción</th><th>Cantidad</th><th>Precio Unitario (ARS)</th><th>Subtotal (ARS)</th></tr>';
+      html += '<tr><th>Descripción</th><th>Cantidad</th><th>Precio Unitario</th><th>Subtotal</th></tr>';
       
       invoiceItems.forEach(item => {
         html += `<tr${!item.found ? ' class="not-found"' : ''}>`;
-        html += `<td>${item.description}${!item.found ? ' (Precio no encontrado)' : ''}</td>`;
+        html += `<td>${item.description}`;
+        
+        if (!item.found) {
+          html += ' <span class="not-found">(Precio no encontrado)</span>';
+        } else if (item.matchScore < 100 && debugMode) {
+          html += `<div class="match-info">Coincidencia: ${item.matchedProduct} (${item.matchScore.toFixed(0)}%)</div>`;
+        }
+        
+        html += `</td>`;
         html += `<td>${item.quantity}</td>`;
-        html += `<td>${item.price}</td>`;
-        html += `<td>${item.subtotal}</td>`;
+        html += `<td><span class="currency-symbol">$</span>${item.price.toFixed(2)}</td>`;
+        html += `<td><span class="currency-symbol">$</span>${item.subtotal.toFixed(2)}</td>`;
         html += '</tr>';
       });
       
-      html += `<tr class="total-row"><td colspan="3" style="text-align: right;">Total</td><td>${total}</td></tr>`;
+      html += `<tr class="total-row"><td colspan="3" style="text-align: right;">Total</td><td><span class="currency-symbol">$</span>${total.toFixed(2)}</td></tr>`;
       html += '</table>';
       
       document.getElementById('invoiceOutput').innerHTML = html;
@@ -384,7 +478,9 @@ Navarro correa 4300`;
         const cells = row.querySelectorAll('td');
         let rowData = [];
         cells.forEach(cell => {
-          rowData.push(cell.textContent);
+          // Eliminar información de coincidencia si existe
+          const content = cell.textContent.replace(/Coincidencia:.*$/m, '').trim();
+          rowData.push(content);
         });
         text += rowData.join('\t') + '\n';
       });
@@ -428,7 +524,9 @@ Navarro correa 4300`;
         const cells = row.querySelectorAll('td');
         let rowData = [];
         cells.forEach(cell => {
-          rowData.push('"' + cell.textContent.replace(/"/g, '""') + '"');
+          // Eliminar información de coincidencia si existe
+          const content = cell.textContent.replace(/Coincidencia:.*$/m, '').trim();
+          rowData.push('"' + content.replace(/"/g, '""') + '"');
         });
         csv.push(rowData.join(','));
       });
@@ -446,6 +544,24 @@ Navarro correa 4300`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+    
+    // Alternar modo de depuración
+    function toggleDebugInfo() {
+      debugMode = !debugMode;
+      const debugElements = document.querySelectorAll('.debug-info');
+      debugElements.forEach(el => {
+        el.style.display = debugMode ? 'block' : 'none';
+      });
+      
+      const showDebugText = document.querySelector('.show-debug');
+      showDebugText.textContent = debugMode ? 'Ocultar información de depuración' : 'Mostrar información de depuración';
+      
+      displayPriceList();
+      // Si hay una factura generada, regenerarla para mostrar/ocultar la información de depuración
+      if (document.querySelector('#invoiceOutput table')) {
+        generateInvoice();
+      }
     }
     
     // Código para el menú hamburguesa
