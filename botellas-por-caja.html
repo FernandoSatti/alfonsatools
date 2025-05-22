@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botellas por Caja | Alfonsa Tools</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">Alfonsa Tools</a>
+        <div class="navbar-links">
+            <a href="generador-listas.html" class="navbar-link">Listas</a>
+            <a href="calculadora-precios.html" class="navbar-link">Precios</a>
+            <a href="calculadora-promedio.html" class="navbar-link">Promedio</a>
+            <a href="precios-aumento-descuento.html" class="navbar-link">Aum/Desc</a>
+            <a href="generador-facturas.html" class="navbar-link">Facturas</a>
+            <a href="reporte-de-reposicion-de-stock.html" class="navbar-link">Stock</a>
+            <a href="botellas-por-caja.html" class="navbar-link active">Botellas</a>
+        </div>
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+
+    <div class="content">
+        <h1 class="fade-in">Herramientas de Inventario</h1>
+        
+        <!-- Herramienta 1: Buscador de Botellas por Caja -->
+        <div class="container fade-in">
+            <h2><i class="fas fa-search"></i> Buscador de Botellas por Caja</h2>
+            <p>Busca un producto para ver cuántas botellas vienen por caja:</p>
+            
+            <div class="search-container">
+                <input type="text" id="product-search" placeholder="Buscar producto..." class="search-input">
+                <button id="search-button" class="btn">Buscar</button>
+            </div>
+            
+            <div class="results-container">
+                <div id="search-results" class="search-results"></div>
+            </div>
+        </div>
+        
+        <!-- Herramienta 2: Calculador de Multiplicaciones -->
+        <div class="container fade-in" style="margin-top: 2rem;">
+            <h2><i class="fas fa-calculator"></i> Calculador de Multiplicaciones</h2>
+            <p>Ingresa una lista en formato "NxM producto" y obtén el total de botellas:</p>
+            
+            <div class="calculator-container">
+                <textarea id="multiplication-input" placeholder="Ejemplo:
+10x4 hermandad malbec
+15x6 piattelli salta reserva malbec
+5x6 piattelli salta reserva malbec-tanat" class="calculator-input" rows="8"></textarea>
+                <button id="calculate-button" class="btn">Calcular</button>
+                <div id="calculation-results" class="calculation-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 Alfonsa Tools. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        // Base de datos de productos
+        const productDatabase = [
+            { name: "CAMPARI 1L", bottlesPerBox: 6 },
+            { name: "CAMPARI 450CC CHICO", bottlesPerBox: 12 },
+            { name: "CAMPARI 750cc", bottlesPerBox: 12 },
+            { name: "CAZALIS LEGER AMERICANO 950CC", bottlesPerBox: 12 },
+            { name: "CINZANO BIANCO 1L", bottlesPerBox: 12 },
+            { name: "CINZANO BIANCO 450CC CHICO", bottlesPerBox: 12 },
+            { name: "CINZANO ROSSO 1L", bottlesPerBox: 12 },
+            { name: "CINZANO ROSSO 450CC CHICO", bottlesPerBox: 12 },
+            { name: "COÑAC RESERVA SAN JUAN", bottlesPerBox: 6 },
+            { name: "CYNAR 70 750CC", bottlesPerBox: 6 },
+            { name: "GIN BULLDOG 750CC", bottlesPerBox: 6 },
+            { name: "OLD SMUGLER 1L", bottlesPerBox: 6 },
+            { name: "OLD SMUGLER 750CC", bottlesPerBox: 6 },
+            { name: "PETACA WHISKY OLD SMUGLER", bottlesPerBox: 24 },
+            { name: "SKYY APRICOT 750CC", bottlesPerBox: 12 },
+            { name: "SKYY BLOOD ORANGE 750CC", bottlesPerBox: 12 },
+            { name: "SKYY PASSION FUIT 750CC", bottlesPerBox: 12 },
+            { name: "SKYY PINEAPPLE 750CC", bottlesPerBox: 12 },
+            { name: "SKYY RASPBERRY 750CC", bottlesPerBox: 12 },
+            { name: "SKYY TRADICIONAL 750", bottlesPerBox: 12 },
+            { name: "TEQUILA JOSE CUERVO GOLD", bottlesPerBox: 12 },
+            { name: "TEQUILA JOSE CUERVO SILVER", bottlesPerBox: 6 }
+        ];
+
+        // Función para normalizar texto (quitar acentos, convertir a minúsculas)
+        function normalizeText(text) {
+            return text.toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // Función para buscar productos
+        function searchProducts(query) {
+            const normalizedQuery = normalizeText(query);
+            
+            return productDatabase.filter(product => {
+                const normalizedName = normalizeText(product.name);
+                return normalizedName.includes(normalizedQuery);
+            });
+        }
+
+        // Función para mostrar resultados de búsqueda
+        function displaySearchResults(results) {
+            const resultsContainer = document.getElementById('search-results');
+            resultsContainer.innerHTML = '';
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<p class="no-results">No se encontraron productos.</p>';
+                return;
+            }
+
+            const resultsList = document.createElement('ul');
+            resultsList.className = 'results-list';
+
+            results.forEach(product => {
+                const listItem = document.createElement('li');
+                listItem.className = 'result-item';
+                listItem.innerHTML = `
+                    <span class="product-name">${product.name}</span>
+                    <span class="bottles-info">(${product.bottlesPerBox} botellas por caja)</span>
+                `;
+                resultsList.appendChild(listItem);
+            });
+
+            resultsContainer.appendChild(resultsList);
+        }
+
+        // Función para calcular multiplicaciones
+        function calculateMultiplications(input) {
+            const lines = input.trim().split('\n');
+            const results = [];
+
+            lines.forEach(line => {
+                // Buscar el patrón NxM al inicio de la línea
+                const match = line.match(/^(\d+)x(\d+)\s+(.+)$/);
+                
+                if (match) {
+                    const boxes = parseInt(match[1]);
+                    const bottlesPerBox = parseInt(match[2]);
+                    const productName = match[3].trim();
+                    const totalBottles = boxes * bottlesPerBox;
+                    
+                    results.push({
+                        original: line,
+                        total: totalBottles,
+                        product: productName
+                    });
+                } else {
+                    // Si no coincide con el patrón, agregar la línea original
+                    results.push({
+                        original: line,
+                        error: true
+                    });
+                }
+            });
+
+            return results;
+        }
+
+        // Función para mostrar resultados de cálculos
+        function displayCalculationResults(results) {
+            const resultsContainer = document.getElementById('calculation-results');
+            resultsContainer.innerHTML = '';
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<p class="no-results">No hay datos para calcular.</p>';
+                return;
+            }
+
+            const resultsList = document.createElement('div');
+            resultsList.className = 'calculation-list';
+
+            results.forEach(result => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'calculation-item';
+                
+                if (result.error) {
+                    resultItem.innerHTML = `
+                        <div class="calculation-error">${result.original} (formato incorrecto)</div>
+                    `;
+                } else {
+                    resultItem.innerHTML = `
+                        <div class="calculation-result">${result.total} ${result.product}</div>
+                    `;
+                }
+                
+                resultsList.appendChild(resultItem);
+            });
+
+            resultsContainer.appendChild(resultsList);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Navegación móvil
+            const hamburger = document.querySelector('.hamburger');
+            const navbarLinks = document.querySelector('.navbar-links');
+
+            hamburger.addEventListener('click', () => {
+                navbarLinks.classList.toggle('active');
+                hamburger.classList.toggle('active');
+            });
+
+            // Buscador de productos
+            const searchInput = document.getElementById('product-search');
+            const searchButton = document.getElementById('search-button');
+
+            searchButton.addEventListener('click', () => {
+                const query = searchInput.value.trim();
+                if (query) {
+                    const results = searchProducts(query);
+                    displaySearchResults(results);
+                }
+            });
+
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const query = searchInput.value.trim();
+                    if (query) {
+                        const results = searchProducts(query);
+                        displaySearchResults(results);
+                    }
+                }
+            });
+
+            // Calculador de multiplicaciones
+            const calculatorInput = document.getElementById('multiplication-input');
+            const calculateButton = document.getElementById('calculate-button');
+
+            calculateButton.addEventListener('click', () => {
+                const input = calculatorInput.value.trim();
+                if (input) {
+                    const results = calculateMultiplications(input);
+                    displayCalculationResults(results);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

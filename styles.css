@@ -329,4 +329,124 @@ body, html {
     background-color: #e9ecef;
 }
 
+/* Estilos adicionales para las herramientas de botellas */
+.search-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+.results-container {
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+.results-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.result-item {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.product-name {
+  font-weight: 600;
+}
+
+.bottles-info {
+  color: var(--primary);
+}
+
+.no-results {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+}
+
+.calculator-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.calculator-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1em;
+  font-family: "Poppins", sans-serif;
+  resize: vertical;
+}
+
+.calculation-results {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 15px;
+  min-height: 100px;
+}
+
+.calculation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.calculation-item {
+  padding: 8px;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.calculation-result {
+  font-weight: 600;
+  color: var(--secondary);
+}
+
+.calculation-error {
+  color: #e74c3c;
+}
+
+/* Estilo para el enlace activo en la barra de navegación */
+.navbar-link.active {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.navbar-link.active::after {
+  transform: scaleX(1);
+}
+
+@media (max-width: 768px) {
+  .search-container {
+    flex-direction: column;
+  }
+
+  .results-container {
+    max-height: 300px;
+  }
+}
 
