@@ -121,26 +121,31 @@
 
     function formatProductList(text) {
       const categories = {
-        "APERITIVOS Y CACHACAS": "🍹",
-        "CERVEZAS": "🍻",
-        "CHAMPAGNE & ESPUMANTES": "🍾",
-        "ENERGIZANTES": "⚡",
-        "GASEOSAS, JUGOS Y AGUAS": "🥤",
-        "GIN Y GINEBRAS": "🍸",
-        "GRAPAS": "🍇",
-        "LICORES": "🥃",
-        "MINIATURAS Y PETACAS": "✨",
-        "RON": "🍸",
-        "SIDRAS": "🍏",
-        "TEQUILAS Y PISCOS": "🥃",
-        "VODKA": "🍸",
-        "WHISKY": "🥃",
-        "COMIDAS": "🍴",
-        "CRISTALERIA Y MAS": "🫗",
-        "ESTUCHERIA Y GIFTPACK": "📦",
-        "PULPAS": "🐙",
-        "VINOS": "🍷"
-      };
+  "ALMACEN": "📦",
+  "ACEITES Y VINAGRES": "🫒",
+  "ARROZ": "🍚",
+  "BEBIDAS": "🥂",
+  "CIGARRILLOS": "🚬",
+  "FIDEOS": "🍜",
+  "HARINAS": "🌾",
+  "REPOSTERIA": "🍰",
+  "YERBAS E INFUSIONES": "🌿",
+  "APERITIVOS Y CACHACAS": "🍹",
+  "CERVEZAS": "🍻",
+  "CHAMPAGNE & ESPUMANTES": "🍾",
+  "DESTILADOS": "🥃",
+  "ENERGIZANTES": "⚡",
+  "GASEOSAS, JUGOS Y AGUAS": "🥤",
+  "GRAPAS": "🍇",
+  "LICORES": "🥃",
+  "MINIATURAS Y PETACAS": "✨",
+  "SIDRAS": "🍏",
+  "COMIDAS": "🍴",
+  "CRISTALERIA Y MAS": "🫗",
+  "ESTUCHERIA Y GIFTPACK": "📦",
+  "PULPAS": "🐙",
+  "VINOS": "🍷"
+};
 
       let lines = text.split('\n');
       let formattedList = '';
@@ -151,12 +156,19 @@
 
         // Verifica si la línea es una categoría y que no se repita
         for (const category in categories) {
-          if (trimmedLine.toUpperCase().startsWith(category) && currentCategory !== category) {
-            formattedList += `\n${categories[category]} ${category.toUpperCase()}\n\n`;  // Añadir salto de línea antes de la categoría
-            currentCategory = category;
-            return;
-          }
-        }
+  if (trimmedLine.toUpperCase().startsWith(category) && currentCategory !== category) {
+    // Si es una subcategoría de ALMACEN, agregar salto de línea extra antes
+    if (category === "ACEITES Y VINAGRES" || category === "ARROZ" || category === "CIGARRILLOS" || 
+        category === "FIDEOS" || category === "HARINAS" || category === "REPOSTERIA" || 
+        category === "YERBAS E INFUSIONES" || category === "BEBIDAS") {
+      formattedList += `\n${categories[category]} ${category.toUpperCase()}\n\n`;
+    } else {
+      formattedList += `\n${categories[category]} ${category.toUpperCase()}\n\n`;
+    }
+    currentCategory = category;
+    return;
+  }
+}
 
         // Añade la línea como producto y respeta el formato
         if (trimmedLine !== '') {
@@ -169,26 +181,30 @@
 
     function compareProductLists(list1, list2) {
       const categories = {
-        "APERITIVOS Y CACHACAS": "🍹",
-        "CERVEZAS": "🍻",
-        "CHAMPAGNE & ESPUMANTES": "🍾",
-        "ENERGIZANTES": "⚡",
-        "GASEOSAS, JUGOS Y AGUAS": "🥤",
-        "GIN Y GINEBRAS": "🍸",
-        "GRAPAS": "🍇",
-        "LICORES": "🥃",
-        "MINIATURAS Y PETACAS": "✨",
-        "RON": "🍸",
-        "SIDRAS": "🍏",
-        "TEQUILAS Y PISCOS": "🥃",
-        "VODKA": "🍸",
-        "WHISKY": "🥃",
-        "COMIDAS": "🍴",
-        "CRISTALERIA Y MAS": "🫗",
-        "ESTUCHERIA Y GIFTPACK": "📦",
-        "PULPAS": "🐙",
-        "VINOS": "🍷"
-      };
+  "ALMACEN": "📦",
+  "ACEITES Y VINAGRES": "🫒",
+  "ARROZ": "🍚",
+  "CIGARRILLOS": "🚬",
+  "FIDEOS": "🍜",
+  "HARINAS": "🌾",
+  "REPOSTERIA": "🍰",
+  "YERBAS E INFUSIONES": "🌿",
+  "APERITIVOS Y CACHACAS": "🍹",
+  "CERVEZAS": "🍻",
+  "CHAMPAGNE & ESPUMANTES": "🍾",
+  "DESTILADOS": "🥃",
+  "ENERGIZANTES": "⚡",
+  "GASEOSAS, JUGOS Y AGUAS": "🥤",
+  "GRAPAS": "🍇",
+  "LICORES": "🥃",
+  "MINIATURAS Y PETACAS": "✨",
+  "SIDRAS": "🍏",
+  "COMIDAS": "🍴",
+  "CRISTALERIA Y MAS": "🫗",
+  "ESTUCHERIA Y GIFTPACK": "📦",
+  "PULPAS": "🐙",
+  "VINOS": "🍷"
+};
 
       let list1Lines = list1.split('\n').map(line => line.replace(/\s+/g, ' ').trim());
       let list2Lines = list2.split('\n').map(line => line.replace(/\s+/g, ' ').trim());
@@ -202,12 +218,19 @@
 
         // Verifica si la línea es una categoría y que no se repita
         for (const category in categories) {
-          if (trimmedLine.toUpperCase().startsWith(category) && currentCategory !== category) {
-            formattedList += `\n${categories[category]} ${category.toUpperCase()}\n\n`;  // Añadir salto de línea antes de la categoría
-            currentCategory = category;
-            return;
-          }
-        }
+  if (trimmedLine.toUpperCase().startsWith(category) && currentCategory !== category) {
+    // Si es una subcategoría de ALMACEN, agregar salto de línea extra antes
+    if (category === "ACEITES Y VINAGRES" || category === "ARROZ" || category === "CIGARRILLOS" || 
+        category === "FIDEOS" || category === "HARINAS" || category === "REPOSTERIA" || 
+        category === "YERBAS E INFUSIONES") {
+      formattedList += `\n${categories[category]} ${category.toUpperCase()}\n\n`;
+    } else {
+      formattedList += `\n${categories[category]} ${category.toUpperCase()}\n\n`;
+    }
+    currentCategory = category;
+    return;
+  }
+}
 
         // Compara el nombre del producto entre la lista 1 y la lista 2
         list1Lines.forEach(item => {
